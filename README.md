@@ -10,7 +10,11 @@
 
 ## Requirements
 
-
+* python 3.7 or higher
+* To install all the dependency packages, please run:
+```
+pip install -r requirements.txt
+```
 
 ## Training
 
