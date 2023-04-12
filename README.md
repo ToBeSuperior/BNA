@@ -1,5 +1,5 @@
 # BNA Parser
-![BNA_overall_img (7)](https://user-images.githubusercontent.com/59141702/230888797-75077cda-e321-4179-a9ba-5a3f01e005cd.png)
+![parser_overall_img (2)](https://user-images.githubusercontent.com/59141702/231392456-a79d2c7d-1856-47dd-ad0d-04e1a1711e6d.png)
 ## Requirements
 
 * python 3.7 or higher
