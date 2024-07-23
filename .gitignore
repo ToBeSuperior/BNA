@@ -42,3 +42,12 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# dataset
+
+data/add_root.py
+data/modify_data.py
+data/silver*
+data/id
+data/de
+data/spmrl
