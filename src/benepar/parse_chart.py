@@ -48,6 +48,7 @@ class MultiLevelEmbedding(nn.Module):
 
         self.d_embedding = d_embedding
         self.partitioned = d_positional is not None
+        self.num_embeddings = num_embeddings
 
         if self.partitioned:
             self.d_positional = d_positional
@@ -56,7 +57,7 @@ class MultiLevelEmbedding(nn.Module):
             self.d_positional = self.d_embedding
             self.d_content = self.d_embedding
 
-        self.emb = nn.Embedding(num_embeddings, self.d_content)
+        self.emb = nn.Embedding(num_embeddings+1, self.d_content)
         self.emb_dropout = FeatureDropout(emb_dropout)
 
         if extra_content_dropout is not None:
@@ -77,6 +78,7 @@ class MultiLevelEmbedding(nn.Module):
         nn.init.normal_(self.timing_table)
 
     def forward(self, pos, extra_content_annotations=None):
+        pos[pos==-100]  = self.num_embeddings
         content_annotations = [self.emb_dropout(self.emb(pos))]
         content_annotations = sum(content_annotations)
         if extra_content_annotations is not None:
@@ -172,7 +174,7 @@ class ChartParser(nn.Module, parse_base.BaseParser):
             )
 
             self.embedding = MultiLevelEmbedding(
-                len(self.tag_vocab)+1,  # pad token = len(self.tag_vocab)
+                len(self.tag_vocab),  # pad token = len(self.tag_vocab)
                 hparams.d_model,
                 d_positional=None,
                 dropout=hparams.embedding_dropout,
@@ -335,10 +337,10 @@ class ChartParser(nn.Module, parse_base.BaseParser):
                 self.decoder.chart_from_tree(example.tree)
             )
             #if self.f_tag is not None:
-        if self.use_tags:
+        if (self.f_tag is not None) or self.use_tags:
             encoded["tag_labels"] = torch.tensor(
-                #[-100] + [self.tag_vocab[tag] for _, tag in example.pos()] + [-100]
-                [len(self.tag_vocab)] + [self.tag_vocab[tag] for _, tag in example.pos()] + [len(self.tag_vocab)]
+                [-100] + [self.tag_vocab[tag] for _, tag in example.pos()] + [-100]
+                # [len(self.tag_vocab)] + [self.tag_vocab[tag] for _, tag in example.pos()] + [len(self.tag_vocab)]
             )
         return encoded
 
@@ -362,8 +364,8 @@ class ChartParser(nn.Module, parse_base.BaseParser):
             batch["tag_labels"] = nn.utils.rnn.pad_sequence(
                 [example["tag_labels"] for example in encoded_batch],
                 batch_first=True,
-                #padding_value=-100,
-                padding_value=len(self.tag_vocab),
+                padding_value=-100,
+                # padding_value=len(self.tag_vocab),
             )
         return batch
 
